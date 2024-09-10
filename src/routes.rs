@@ -7,13 +7,12 @@ use axum::{
     Router,
 };
 
-#[cfg(test)]
-use crate::mongodb_notes_repo::MockMongodbNotesRepo as MongodbNotesRepo;
-#[cfg(not(test))]
-use crate::mongodb_notes_repo::MongodbNotesRepo;
-use crate::notes;
+use crate::{notes, notes_repo::NotesRepo};
 
-pub fn app(notes_repo: MongodbNotesRepo) -> Router {
+pub fn app<R>(notes_repo: R) -> Router
+where
+    R: NotesRepo + Sync + Send + 'static,
+{
     let state = Arc::new(notes_repo);
     Router::new()
         .route("/", get(|| async { "HTTP Caracola" }))
@@ -37,71 +36,75 @@ mod tests {
     use notes::{Note, Scope};
     use tower::ServiceExt;
 
-    use crate::mongodb_notes_repo::MockMongodbNotesRepo;
+    use crate::notes_repo::MockNotesRepo;
 
     use super::*;
 
-    // #[tokio::test]
-    // async fn root_returns_static_response_and_ok() {
-    //     let routes = app();
-    //     let request = Request::builder().uri("/").body(Body::empty()).unwrap();
+    #[tokio::test]
+    async fn root_returns_static_response_and_ok() {
+        let notes_repo = MockNotesRepo::new();
+        let routes = app(notes_repo);
+        let request = Request::builder().uri("/").body(Body::empty()).unwrap();
 
-    //     let response = routes.oneshot(request).await.unwrap();
+        let response = routes.oneshot(request).await.unwrap();
 
-    //     assert_eq!(response.status(), StatusCode::OK);
-    //     let body = response.into_body().collect().await.unwrap().to_bytes();
-    //     assert_eq!(&body, "HTTP Caracola");
-    // }
+        assert_eq!(response.status(), StatusCode::OK);
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        assert_eq!(&body, "HTTP Caracola");
+    }
 
-    // #[tokio::test]
-    // async fn nonexisting_url_returns_emply_response_and_not_found() {
-    //     let routes = app();
-    //     let request = Request::builder()
-    //         .uri("/nonexisting")
-    //         .body(Body::empty())
-    //         .unwrap();
+    #[tokio::test]
+    async fn nonexisting_url_returns_emply_response_and_not_found() {
+        let notes_repo = MockNotesRepo::new();
+        let routes = app(notes_repo);
+        let request = Request::builder()
+            .uri("/nonexisting")
+            .body(Body::empty())
+            .unwrap();
 
-    //     let response = routes.oneshot(request).await.unwrap();
+        let response = routes.oneshot(request).await.unwrap();
 
-    //     assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    //     let body = response.into_body().collect().await.unwrap().to_bytes();
-    //     assert_eq!(&body, "No route for /nonexisting");
-    // }
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        assert_eq!(&body, "No route for /nonexisting");
+    }
 
-    // #[tokio::test]
-    // async fn post_to_notes_without_content_type_returns_unsuported_media_type() {
-    //     let routes = app();
-    //     let request = Request::builder()
-    //         .method(http::Method::POST)
-    //         .uri("/notes")
-    //         .body(Body::empty())
-    //         .unwrap();
+    #[tokio::test]
+    async fn post_to_notes_without_content_type_returns_unsuported_media_type() {
+        let notes_repo = MockNotesRepo::new();
+        let routes = app(notes_repo);
+        let request = Request::builder()
+            .method(http::Method::POST)
+            .uri("/notes")
+            .body(Body::empty())
+            .unwrap();
 
-    //     let response = routes.oneshot(request).await.unwrap();
+        let response = routes.oneshot(request).await.unwrap();
 
-    //     assert_eq!(response.status(), StatusCode::UNSUPPORTED_MEDIA_TYPE);
-    // }
+        assert_eq!(response.status(), StatusCode::UNSUPPORTED_MEDIA_TYPE);
+    }
 
-    // #[tokio::test]
-    // async fn post_to_notes_with_bad_data_returns_unprocessable_entity() {
-    //     let routes = app();
-    //     let request = Request::builder()
-    //         .method(http::Method::POST)
-    //         .uri("/notes")
-    //         .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
-    //         .body(Body::from(
-    //             "{\"title\": \"A note\", \"text\": \"An idea\" }",
-    //         ))
-    //         .unwrap();
+    #[tokio::test]
+    async fn post_to_notes_with_bad_data_returns_unprocessable_entity() {
+        let notes_repo = MockNotesRepo::new();
+        let routes = app(notes_repo);
+        let request = Request::builder()
+            .method(http::Method::POST)
+            .uri("/notes")
+            .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+            .body(Body::from(
+                "{\"title\": \"A note\", \"text\": \"An idea\" }",
+            ))
+            .unwrap();
 
-    //     let response = routes.oneshot(request).await.unwrap();
+        let response = routes.oneshot(request).await.unwrap();
 
-    //     assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
-    // }
+        assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    }
 
     #[tokio::test]
     async fn post_to_notes_with_data_creates_note_in_repo() {
-        let mut notes_repo = MockMongodbNotesRepo::new();
+        let mut notes_repo = MockNotesRepo::new();
         notes_repo
             .expect_create()
             .with(eq(Note {

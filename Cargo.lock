@@ -1189,6 +1189,7 @@ dependencies = [
 name = "real-world-testing-rustconf2024"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "axum",
  "dotenv",
  "http-body-util",
