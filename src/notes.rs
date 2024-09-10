@@ -1,14 +1,20 @@
 //! Module for the notes data and functionality
-use axum::{http::StatusCode, Json};
-use serde::Deserialize;
+use std::sync::Arc;
 
-#[derive(Debug, Deserialize)]
+use axum::{extract::State, http::StatusCode, Json};
+use serde::{Deserialize, Serialize};
+
+use crate::notes_repo::NotesRepo;
+
+type AppState = Arc<dyn NotesRepo + Sync + Send + 'static>;
+
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Scope {
     pub project: String,
     pub area: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct Note {
     pub title: String,
     pub tags: Vec<String>,
@@ -16,6 +22,12 @@ pub struct Note {
     pub scope: Scope,
 }
 
-pub async fn create(Json(note): Json<Note>) -> (StatusCode, String) {
-    (StatusCode::OK, String::from(""))
+pub async fn create(State(state): State<AppState>, Json(note): Json<Note>) -> (StatusCode, String) {
+    match state.create(note).await {
+        Ok(msg) => (StatusCode::OK, msg),
+        Err(_) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            String::from("Something went wrong"),
+        ),
+    }
 }
