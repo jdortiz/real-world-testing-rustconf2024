@@ -1,0 +1,40 @@
+{
+    "image": "mcr.microsoft.com/devcontainers/universal:2",
+    "features": {
+        "ghcr.io/devcontainers/features/rust:1": {
+            "version": "latest",
+            "profile": "complete"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "editor.formatOnSave": true,
+                "files.autoSave": "afterDelay",
+                "files.insertFinalNewLine": true,
+                "files.trimFinalNewlines": true,
+                "files.trimTrailingWhitespace": true,
+                "[rust]": {
+                    "editor.defa,ultFormatter": "rust-lang.rust-analyzer",
+                }
+            },
+            "extensions": [
+                "rust-lang.rust-analyzer",
+                "dustypomerleau.rust-syntax",
+                "serayuzgur.crates",
+                "njpwerner.autodocstring",
+                "vadimcn.vscode-lldb",
+                "tamasfe.even-better-toml",
+                "GitHub.copilot",
+                "JScearcy.rust-doc-viewer"
+            ]
+        }
+    },
+    // python2 is needed for armv7-unknown-linux-gnueabihf
+    // gstreamer is needed for turbo_player
+    "postCreateCommand": "sudo apt-get update && sudo apt-get install -y python2 build-essential curl pkg-config gstreamer1.0-tools libglib2.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav libgstreamer1.0-dev && git lfs install",
+    "containerEnv": {
+        "GST_PLUGIN_PATH": "~/.local/lib/gstreamer-1.0",
+        "PKG_CONFIG_PATH": "/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"
+    }
+}
