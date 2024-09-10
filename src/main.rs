@@ -1,4 +1,6 @@
+mod mongodb_notes_repo;
 mod notes;
+mod notes_repo_error;
 mod routes;
 
 use tokio::net::TcpListener;
@@ -11,5 +13,5 @@ async fn main() {
     let listener = TcpListener::bind(SERVER_ADDR)
         .await
         .expect("Unable to create listener");
-    axum::serve(listener, routes::app()).await.unwrap();
+    axum::serve(listener, routes::app().await).await.unwrap();
 }

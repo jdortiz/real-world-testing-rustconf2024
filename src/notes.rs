@@ -1,14 +1,16 @@
 //! Module for the notes data and functionality
-use axum::{http::StatusCode, Json};
-use serde::Deserialize;
+use axum::{extract::State, http::StatusCode, Json};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize)]
+use crate::mongodb_notes_repo::MongodbNotesRepo;
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Scope {
     pub project: String,
     pub area: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Note {
     pub title: String,
     pub tags: Vec<String>,
@@ -16,6 +18,15 @@ pub struct Note {
     pub scope: Scope,
 }
 
-pub async fn create(Json(note): Json<Note>) -> (StatusCode, String) {
-    (StatusCode::OK, String::from(""))
+pub async fn create(
+    State(state): State<MongodbNotesRepo>,
+    Json(note): Json<Note>,
+) -> (StatusCode, String) {
+    match state.create(note).await {
+        Ok(msg) => (StatusCode::OK, msg),
+        Err(_) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            String::from("Something went wrong"),
+        ),
+    }
 }

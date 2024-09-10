@@ -1,17 +1,25 @@
 //! Routes for the HTTP application
+use std::env;
+
 use axum::{
     http::{StatusCode, Uri},
     routing::{get, post},
     Router,
 };
+use dotenv::dotenv;
 
-use crate::notes;
+use crate::{mongodb_notes_repo::MongodbNotesRepo, notes};
 
-pub fn app() -> Router {
+pub async fn app() -> Router {
+    dotenv().expect("Set your configuration in a .env file");
+    let connection_string =
+        env::var("MONGODB_CONN").expect("Define MONGODB_CONN=connection_string in your .env");
+    let notes_repo = MongodbNotesRepo::new(&connection_string).await.unwrap();
     Router::new()
         .route("/", get(|| async { "HTTP Caracola" }))
         .route("/notes", post(notes::create))
         .fallback(fallback_handler)
+        .with_state(notes_repo)
 }
 
 async fn fallback_handler(uri: Uri) -> (StatusCode, String) {
