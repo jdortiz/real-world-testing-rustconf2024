@@ -69,4 +69,21 @@ mod tests {
 
         assert_eq!(response.status(), StatusCode::UNSUPPORTED_MEDIA_TYPE);
     }
+
+    #[tokio::test]
+    async fn post_to_notes_with_bad_data_returns_unprocessable_entity() {
+        let routes = app();
+        let request = Request::builder()
+            .method(http::Method::POST)
+            .uri("/notes")
+            .header(http::header::CONTENT_TYPE, mime::APPLICATION_JSON.as_ref())
+            .body(Body::from(
+                "{\"title\": \"A note\", \"text\": \"An idea\" }",
+            ))
+            .unwrap();
+
+        let response = routes.oneshot(request).await.unwrap();
+
+        assert_eq!(response.status(), StatusCode::UNPROCESSABLE_ENTITY);
+    }
 }

@@ -12,3 +12,4 @@ tower = { version = "0.5.1", features = ["util"] }
 
 [dev-dependencies]
 http-body-util = "0.1.2"
+mime = "0.3.17"
