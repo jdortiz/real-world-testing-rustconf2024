@@ -1,13 +1,16 @@
 //! Routes for the HTTP application
 use axum::{
     http::{StatusCode, Uri},
-    routing::get,
+    routing::{get, post},
     Router,
 };
+
+use crate::notes;
 
 pub fn app() -> Router {
     Router::new()
         .route("/", get(|| async { "HTTP Caracola" }))
+        .route("/notes", post(notes::create))
         .fallback(fallback_handler)
 }
 

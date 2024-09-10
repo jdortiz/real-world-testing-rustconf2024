@@ -1,3 +1,4 @@
+mod notes;
 mod routes;
 
 use tokio::net::TcpListener;
@@ -8,7 +9,7 @@ async fn main() {
     println!("Hola Caracola!");
 
     let listener = TcpListener::bind(SERVER_ADDR)
-         .await
-         .expect("Unable to create listener");
+        .await
+        .expect("Unable to create listener");
     axum::serve(listener, routes::app()).await.unwrap();
 }
