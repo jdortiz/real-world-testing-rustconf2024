@@ -1,5 +1,6 @@
 //! Module to implement a note repository using MongoDB
-
+#[cfg(test)]
+use mockall::mock;
 use mongodb::{
     options::{ClientOptions, ConnectionString},
     Client,
@@ -7,7 +8,6 @@ use mongodb::{
 
 use crate::{notes::Note, notes_repo_error::NotesRepoError};
 
-#[derive(Clone)]
 pub struct MongodbNotesRepo {
     client: Client,
 }
@@ -31,5 +31,12 @@ impl MongodbNotesRepo {
             Ok(result) => Ok(format!("Id: {} Note: {note:?}", result.inserted_id)),
             Err(_) => Err(NotesRepoError::OperationFailed),
         }
+    }
+}
+
+#[cfg(test)]
+mock! {
+    pub MongodbNotesRepo {
+        pub async fn create(&self, note: Note) -> Result<String, NotesRepoError>;
     }
 }
