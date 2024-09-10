@@ -5,7 +5,6 @@ pub fn app() -> Router {
     Router::new().route("/", get(|| async { "HTTP Caracola" }))
 }
 
-
 #[cfg(test)]
 mod tests {
     use axum::{body::Body, http::{Request, StatusCode}};
@@ -24,5 +23,20 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         let body = response.into_body().collect().await.unwrap().to_bytes();
         assert_eq!(&body, "HTTP Caracola");
+    }
+        
+    #[tokio::test]
+    async fn nonexisting_url_returns_emply_response_and_not_found() {
+        let routes = app();
+        let request = Request::builder()
+            .uri("/nonexisting")
+            .body(Body::empty())
+            .unwrap();
+
+        let response = routes.oneshot(request).await.unwrap();
+
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        assert!(&body.is_empty());
     }
 }
