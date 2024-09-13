@@ -1,4 +1,6 @@
-# VoiceIn
+# Real World Testing in Rust
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/jdortiz/real-world-testing-rustconf2024/)
 
 ## This Repo
 
@@ -12,6 +14,12 @@ to write actual tests for a realistic application. Reach the top of the Unit Tes
 
 You can use this code in your system or spin up a codespace from this repo. There are commits for each of the stages of
 the workshop that are available in the `develop` branch. `main' just contains the starting point for the workshop.
+
+## Setup
+
+### Environment Variables
+
+- MONGODB_CONN
 
 ## License
 
