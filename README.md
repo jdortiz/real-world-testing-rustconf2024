@@ -1,4 +1,6 @@
-# VoiceIn
+# Real World Testing in Rust
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/jdortiz/real-world-testing-rustconf2024/)
 
 ## This Repo
 
